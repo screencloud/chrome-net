@@ -129,7 +129,7 @@ inherits(Server, EventEmitter)
  *   Emitted when an error occurs. The 'close' event will be called directly
  *   following this event. See example in discussion of server.listen.
  */
-function Server (/* [options], listener */) {
+function Server ( /* [options], listener */) {
   var self = this
   if (!(self instanceof Server)) return new Server(arguments[0], arguments[1])
   EventEmitter.call(self)
@@ -192,7 +192,7 @@ Server.prototype._usingSlaves = false // not used
  *
  * @return {Socket}
  */
-Server.prototype.listen = function (/* variable arguments... */) {
+Server.prototype.listen = function ( /* variable arguments... */) {
   var self = this
 
   var lastArg = arguments[arguments.length - 1]
@@ -235,8 +235,8 @@ Server.prototype.listen = function (/* variable arguments... */) {
     // UNIX socket or Windows pipe.
     throw new Error('Pipes are not supported in Chrome Apps.')
   } else if (is.isUndefined(arguments[1]) ||
-             is.isFunction(arguments[1]) ||
-             is.isNumber(arguments[1])) {
+    is.isFunction(arguments[1]) ||
+    is.isNumber(arguments[1])) {
     // The first argument is the port, no IP given.
     address = null
   } else {
@@ -283,21 +283,21 @@ Server.prototype.listen = function (/* variable arguments... */) {
 
     function listen () {
       chrome.sockets.tcpServer.listen(self.id, self._host, self._port,
-          self._backlog, function (result) {
-        // callback may be after close
-        if (self.id !== socketId) {
-          ignoreLastError()
-          return
-        }
-        if (result !== 0 && isAny6) {
-          ignoreLastError()
-          self._host = '0.0.0.0' // try IPv4
-          isAny6 = false
-          return listen()
-        }
+        self._backlog, function (result) {
+          // callback may be after close
+          if (self.id !== socketId) {
+            ignoreLastError()
+            return
+          }
+          if (result !== 0 && isAny6) {
+            ignoreLastError()
+            self._host = '0.0.0.0' // try IPv4
+            isAny6 = false
+            return listen()
+          }
 
-        self._onListen(result)
-      })
+          self._onListen(result)
+        })
     }
     listen()
   })
@@ -324,7 +324,7 @@ Server.prototype._onListen = function (result) {
       self._address = {
         port: info.localPort,
         family: info.localAddress &&
-          info.localAddress.indexOf(':') !== -1 ? 'IPv6' : 'IPv4',
+        info.localAddress.indexOf(':') !== -1 ? 'IPv6' : 'IPv4',
         address: info.localAddress
       }
       self.emit('listening')
@@ -590,7 +590,7 @@ Socket.prototype._reset = function () {
   var self = this
 
   self.remoteAddress = self.remotePort =
-      self.localAddress = self.localPort = null
+    self.localAddress = self.localPort = null
   self.remoteFamily = 'IPv4'
   self.readable = self.writable = false
   self._connecting = false
@@ -665,7 +665,8 @@ Socket.prototype.connect = function () {
     self.once('connect', cb)
   }
 
-  chrome.sockets.tcp.create(function (createInfo) {
+  var opts = {bufferSize: options.bufferSize || 1024 * 64} // 64k buffer
+  chrome.sockets.tcp.create(opts, function (createInfo) {
     if (!self._connecting || self.id) {
       ignoreLastError()
       chrome.sockets.tcp.close(createInfo.socketId)
@@ -716,7 +717,7 @@ Socket.prototype._onConnect = function () {
 
     self.remoteAddress = result.peerAddress
     self.remoteFamily = result.peerAddress &&
-        result.peerAddress.indexOf(':') !== -1 ? 'IPv6' : 'IPv4'
+    result.peerAddress.indexOf(':') !== -1 ? 'IPv6' : 'IPv4'
     self.remotePort = result.peerPort
     self.localAddress = result.localAddress
     self.localPort = result.localPort
@@ -826,7 +827,7 @@ Socket.prototype._onReceive = function (data) {
   self._unrefTimer()
 
   if (self.ondata) {
-    console.error('socket.ondata = func is non-standard, use socket.on(\'data\', func)')
+    console.error("socket.ondata = func is non-standard, use socket.on('data', func)")
     self.ondata(buffer, offset, self.bytesRead)
   }
   if (!self.push(buffer)) { // if returns false, then apply backpressure
@@ -838,7 +839,7 @@ Socket.prototype._onReceiveError = function (resultCode) {
   var self = this
   if (resultCode === -100) { // net::ERR_CONNECTION_CLOSED
     if (self.onend) {
-      console.error('socket.onend = func is non-standard, use socket.on(\'end\', func)')
+      console.error("socket.onend = func is non-standard, use socket.on('end', func)")
       self.once('end', self.onend)
     }
     self.push(null)
@@ -1003,7 +1004,7 @@ Socket.prototype.setKeepAlive = function (enable, initialDelay, callback) {
   var self = this
   if (self.id) {
     chrome.sockets.tcp.setKeepAlive(self.id, !!enable, ~~(initialDelay / 1000),
-        chromeCallbackWrap(callback))
+      chromeCallbackWrap(callback))
   }
 }
 
@@ -1020,7 +1021,7 @@ Socket.prototype.address = function () {
     address: self.localAddress,
     port: self.localPort,
     family: self.localAddress &&
-      self.localAddress.indexOf(':') !== -1 ? 'IPv6' : 'IPv4'
+    self.localAddress.indexOf(':') !== -1 ? 'IPv6' : 'IPv4'
   }
 }
 
@@ -1097,7 +1098,7 @@ function isPipeName (s) {
   return is.isString(s) && toNumber(s) === false
 }
 
- // This prevents "Unchecked runtime.lastError" errors
+// This prevents "Unchecked runtime.lastError" errors
 function ignoreLastError () {
   chrome.runtime.lastError // call the getter function
 }
